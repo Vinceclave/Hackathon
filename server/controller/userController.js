@@ -1,74 +1,88 @@
 const { sql } = require('../config/db')
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
     try {
-        const { username, password, userType, firstname, lastname, phonenum, schedule } = req.query;
+        const { username, userpass, userType, firstname, lastname, phonenum, schedule } = req.query;
 
-        // Check for existing username
-        const existingUserResult = await sql.query`
-            SELECT * FROM USERS WHERE USERNAME = ${username}
-        `;
-
-        if (existingUserResult.recordset.length > 0) {
-            return res.status(409).json({ message: "Username already exists" });
+        // Hash the password and execute stored procedure
+        const hashedPassword = await bcrypt.hash(userpass, 10);
+        // Validate input
+        if (
+            !username?.trim() || username.length < 3 || username.length > 30 ||
+            !userpass?.trim() || userpass.length < 6 ||
+            !['barber', 'customer'].includes(userType) ||
+            !firstname?.trim() || firstname.length < 1 || firstname.length > 30 ||
+            !lastname?.trim() || lastname.length < 1 || lastname.length > 30 ||
+            (userType === 'customer' && (!phonenum || !/^\d{10}$/.test(phonenum))) ||
+            (userType === 'barber' && !schedule?.trim())
+        ) {
+            return res.status(400).json({ status: 400, message: 'Invalid input. Check all fields.' });
         }
 
-        // Hash the password and insert the new user
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const userResult = await sql.query`
-            INSERT INTO USERS (USERNAME, PASSWORD_HASH, USERTYPE) 
-            OUTPUT INSERTED.USER_ID
-            VALUES (${username}, ${hashedPassword}, ${userType})
+        const { recordset } = await sql.query`
+          EXEC dbo.RegisterUser 
+            @UserName = ${username}, @UserPass = ${hashedPassword},
+            @UserType = ${userType}, @FirstName = ${firstname}, 
+            @LastName = ${lastname}, @PhoneNum = ${phonenum || null},
+            @Schedule = ${schedule || null};
         `;
 
-        const userId = userResult.recordset[0].USER_ID;
+        const errorCode = recordset[0]?.ErrorCode;
 
-        // Insert into the appropriate table based on userType
-        const userTable = userType === 'Customer' ? 'CUSTOMER' : 'BARBER';
-        const additionalColumns = userType === 'Customer' 
-            ? `(FIRSTNAME, LASTNAME, PHONENUM, USER_ID)` 
-            : `(FIRSTNAME, LASTNAME, SCHEDULE, USER_ID)`;
-        
-        const additionalValues = userType === 'Customer' 
-            ? `(${firstname}, ${lastname}, ${phonenum}, ${userId})`
-            : `(${firstname}, ${lastname}, ${schedule}, ${userId})`;
-
-        await sql.query`
-            INSERT INTO ${userTable} ${sql.raw(additionalColumns)} 
-            VALUES ${sql.raw(additionalValues)}
-        `;
-
-        res.status(201).json({ message: "User registered successfully" });
+        if (errorCode === -1) {
+            return res.status(400).json({ status: 400, message: 'Invalid user type. Please choose either "barber" or "customer".' });
+        }
+        if (errorCode === -2) {
+            return res.status(400).json({ status: 400, message: 'Username already exists. Please choose a different username.' });
+        }
+        if (errorCode === 1) {
+            return res.status(200).json({ status: 200, message: 'Registration successful!' });
+        }
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Server error" });
+        return res.status(500).json({ status: 500, message: 'An error occurred. Try again later.', details: error.message });
     }
 };
-
-
 
 const login = async (req, res) => {
-    const { username, password } = req.query;
-
     try {
-        const { recordset } = await sql.query`
-            SELECT * FROM USERS WHERE USERNAME = ${username}
-        `;
-        const user = recordset[0];
+        const { username, userpass } = req.query;
 
-        if (user && await bcrypt.compare(password, user.PASSWORD_HASH)) {
-            return res.status(200).json({ message: "Login successful", userId: user.USER_ID });
+        if (!username || !userpass) {
+            return res.status(400).json({ message: 'Username and password are required' });
         }
 
-        res.status(401).json({ message: "Invalid username or password" });
+        const hashedPassword = await bcrypt.hash(userpass, 10);
+
+        const { recordset } = await sql.query`
+            EXEC dbo.Login_User 
+                @User_Name = ${username}, 
+                @User_Pass = ${hashedPassword}
+        `;
+        
+
+        const errorCode = recordset[0]?.ErrorCode;
+
+        if (errorCode === 0) {
+            return res.status(400).json({ status: 400, message: 'Invalid username or password' });
+        }
+        if (errorCode === -1) {
+            return res.status(400).json({ status: 400, message: 'Invalid username or password' });
+        }
+        if (errorCode === 1) {
+            return res.status(200).json({ status: 200, message: 'Login successful!' });
+        }
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Server error" });
+        return res.status(500).json({ message: 'Server error' });
     }
 };
+
+module.exports = login;
+
 
 module.exports = { register, login}
