@@ -1,8 +1,7 @@
-const { sql } = require('../config/db')
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const User = require('../model/authModel'); // Import the user model
+const User = require('../models/authModel');
 
+// REGISTER CONTROLLER
 const register = async (req, res) => {
     const { username, userpass, userType, firstname, lastname, phonenum, schedule } = req.query;
 
@@ -35,52 +34,10 @@ const register = async (req, res) => {
             if (user.ErrorCode === 1) {
                 return res.status(200).json({ status: 200, message: 'Registration successful!' });
             }
+    
         } catch (error) {
         console.error(error);
         return res.status(500).json({ status: 500, message: 'An error occurred. Try again later.', details: error.message });
-        }   
+        }
+
 }
-
-// LOGIN CONTROLLER
-const login = async (req, res) => {
-    const { username, userpass } = req.query;
-    
-    try {
-       
-
-        if (!username || !userpass) {
-            return res.status(400).json({ message: 'Username and password are required' });
-        }
-
-        const hashedPassword = await bcrypt.hash(userpass, 10);
-
-
-        const record = await User.login(username);
-
-        const isMatch = await bcrypt.compare(hashedPassword, record.StoredPasswordHash);
-        if (!isMatch) {
-          return res.status(400).json({ message: 'Invalid username or password' });
-        }
-
-        const errorCode = record?.ErrorCode;
-
-        if (errorCode === 0) {
-            return res.status(400).json({ status: 400, message: 'Invalid username or password' });
-        }
-        if (errorCode === -1) {
-            return res.status(400).json({ status: 400, message: 'Invalid username or password' });
-        }
-        if (errorCode === 1) {
-            return res.status(200).json({ status: 200, message: 'Login successful!' });
-        }
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Server error' });
-    }
-};
-
-module.exports = login;
-
-
-module.exports = { register, login}
