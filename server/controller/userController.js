@@ -1,8 +1,10 @@
 const { sql } = require('../config/db')
-const jwt = require('jsonwebtoken');
+const { generateJWT } = require('../utils/jwt');
 const bcrypt = require('bcrypt');
 const User = require('../model/authModel'); // Import the user model
 
+
+// REGISTER CONTROLLER
 const register = async (req, res) => {
     const { username, userpass, userType, firstname, lastname, phonenum, schedule } = req.query;
 
@@ -43,44 +45,45 @@ const register = async (req, res) => {
 
 // LOGIN CONTROLLER
 const login = async (req, res) => {
-    const { username, userpass } = req.query;
+    const { username, userpass } = req.body; // Get data from the request body
     
     try {
-       
+        console.log('Username:', username); // Log username to ensure it's being passed
+        console.log('Userpass:', userpass); // Log password to ensure it's being passed
 
         if (!username || !userpass) {
             return res.status(400).json({ message: 'Username and password are required' });
         }
 
-        const hashedPassword = await bcrypt.hash(userpass, 10);
+        const record = await User.login(username); // Get user from DB
 
+        console.log('User Record:', record); // Log the user record to check if it's valid
 
-        const record = await User.login(username);
+        if (!record || !record.StoredPasswordHash) {
+            return res.status(400).json({ message: 'Invalid username or password' });
+        }
 
-        const isMatch = await bcrypt.compare(hashedPassword, record.StoredPasswordHash);
+        // Check if password matches the stored hash
+        const isMatch = await bcrypt.compare(userpass, record.StoredPasswordHash);
+        
         if (!isMatch) {
-          return res.status(400).json({ message: 'Invalid username or password' });
+            return res.status(400).json({ message: 'Invalid username or password' });
         }
 
-        const errorCode = record?.ErrorCode;
-
-        if (errorCode === 0) {
-            return res.status(400).json({ status: 400, message: 'Invalid username or password' });
-        }
-        if (errorCode === -1) {
-            return res.status(400).json({ status: 400, message: 'Invalid username or password' });
-        }
-        if (errorCode === 1) {
-            return res.status(200).json({ status: 200, message: 'Login successful!' });
-        }
-
+        // If authentication is successful, create and return the JWT token
+        const token = generateJWT(record.UserId);
+        return res.status(200).json({
+            status: 200,
+            message: 'Login successful!',
+            token,
+            username: record.Username,
+            userID: record.UserId
+        });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error' });
     }
 };
-
-module.exports = login;
 
 
 module.exports = { register, login}
