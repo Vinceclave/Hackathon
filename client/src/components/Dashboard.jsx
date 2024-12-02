@@ -5,7 +5,7 @@ const Dashboard = () => {
   const { logOut } = useAuth();
 
   return (
-    <div>
+    <div>asdasd
       <h1>Welcome to your Dashboard</h1>
       <button onClick={logOut}>Logout</button>
     </div>

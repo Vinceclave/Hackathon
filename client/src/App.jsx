@@ -1,12 +1,13 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import React, { useEffect } from "react";
+import { BrowserRouter as Router, Routes, Route, useNavigate } from "react-router-dom";
 import { SnackbarProvider } from 'notistack';  // Import Notistack
 import AuthProvider from "./hooks/AuthProvider"; // Ensure this is the correct path
 import Login from "./components/auth/Login";
 import Dashboard from "./components/Dashboard"; // Example component
-import PrivateRoute from "./PrivateRoute";
+import PrivateRoute from "./routes/PrivateRoute";
 import Register from "./components/auth/Register";
 import Landing from "./pages/Landing";
+import RoleBased from "./routes/RoleBasedRoute";
 
 const App = () => {
   return (
@@ -20,9 +21,10 @@ const App = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route element={<PrivateRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
+                <Route element={<RoleBased allowedRoles={'customer'} />}>
+                     <Route path="/dashboard" element={<Dashboard />} />
+                </Route>
               </Route>
-              {/* Other routes */}
             </Routes>
           </AuthProvider>
         </Router>
