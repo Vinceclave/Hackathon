@@ -33,11 +33,9 @@ const Register = () => {
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // Ensure the value is treated as a string and trim it
     setUserCredentials((prevState) => ({
       ...prevState,
-      [name]: value ? value.trim() : value, // Check if value is not null or undefined before trimming
+      [name]: value,
     }));
   };
 
@@ -60,17 +58,13 @@ const Register = () => {
     e.preventDefault();
     const { username, password } = userCredentials;
 
-    // Trim and validate the username and password
+    // Validate the username and password
     let errors = { username: '', password: '' };
-    if (!username.trim()) {
+    if (!username) {
       errors.username = 'Username is required!';
-    } else if (username.length < 3 || username.length > 30) {
-      errors.username = 'Username must be between 3 and 30 characters!';
     }
-    if (!password.trim()) {
+    if (!password) {
       errors.password = 'Password is required!';
-    } else if (password.length < 6) {
-      errors.password = 'Password must be at least 6 characters long!';
     }
 
     // If there are validation errors, set them and return early
@@ -99,11 +93,7 @@ const Register = () => {
     }
 
     if (role === 'customer') {
-      if (!phone) {
-        errors.phone = 'Phone number is required for Customers!';
-      } else if (!/^\d{10}$/.test(phone)) {
-        errors.phone = 'Phone number must be 10 digits!';
-      }
+      if (!phone) errors.phone = 'Phone number is required for Customers!';
     }
 
     if (role === 'barber') {
@@ -123,7 +113,7 @@ const Register = () => {
 
   // Handle registration submission
   const handleRegistration = () => {
-    registerAction({ ...userCredentials, role });
+    registerAction({...userCredentials, role})
   };
 
   return (
