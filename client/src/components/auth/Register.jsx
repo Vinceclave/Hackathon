@@ -1,4 +1,10 @@
 import React, { useState } from 'react';
+import { useAuth } from "../../hooks/AuthProvider"; // Import the useAuth hook
+import { Link } from 'react-router-dom'; // Import Link from react-router-dom
+import StepNavigation from '../auth/register/StepNavigation';
+import RoleSelection from '../auth/register/RoleSelection';
+import Step1 from '../auth/register/steps/StepOne';
+import Step2 from '../auth/register/steps/StepTwo';
 
 const Register = () => {
   const [step, setStep] = useState(0); // Track the current step of the form
@@ -22,18 +28,30 @@ const Register = () => {
     schedule: '',
   });
 
+  const { registerAction } = useAuth(); // Access loginAction from context
+
   // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Ensure the value is treated as a string and trim it
     setUserCredentials((prevState) => ({
       ...prevState,
-      [name]: value,
+      [name]: value ? value.trim() : value, // Check if value is not null or undefined before trimming
     }));
   };
 
   // Handle role selection
   const handleRoleSelection = (selectedRole) => {
     setRole(selectedRole);
+    setUserCredentials({
+      username: '',
+      password: '',
+      firstname: '',
+      lastname: '',
+      phone: '',
+      schedule: '',
+    }); // Clear the form fields for the selected role
     setStep(1); // Move to the next step after selecting a role
   };
 
@@ -42,13 +60,17 @@ const Register = () => {
     e.preventDefault();
     const { username, password } = userCredentials;
 
-    // Validate the username and password
+    // Trim and validate the username and password
     let errors = { username: '', password: '' };
-    if (!username) {
+    if (!username.trim()) {
       errors.username = 'Username is required!';
+    } else if (username.length < 3 || username.length > 30) {
+      errors.username = 'Username must be between 3 and 30 characters!';
     }
-    if (!password) {
+    if (!password.trim()) {
       errors.password = 'Password is required!';
+    } else if (password.length < 6) {
+      errors.password = 'Password must be at least 6 characters long!';
     }
 
     // If there are validation errors, set them and return early
@@ -68,14 +90,27 @@ const Register = () => {
     e.preventDefault();
     const { firstname, lastname, phone, schedule } = userCredentials;
 
-    // Validate the step 2 fields
+    // Validate the step 2 fields based on the selected role
     let errors = { firstname: '', lastname: '', phone: '', schedule: '' };
 
-    if (!firstname || !lastname || !phone || (role === 'barber' && !schedule)) {
+    if (!firstname || !lastname) {
       if (!firstname) errors.firstname = 'First Name is required!';
       if (!lastname) errors.lastname = 'Last Name is required!';
-      if (!phone) errors.phone = 'Phone number is required!';
-      if (role === 'barber' && !schedule) errors.schedule = 'Schedule is required for Barbers!';
+    }
+
+    if (role === 'customer') {
+      if (!phone) {
+        errors.phone = 'Phone number is required for Customers!';
+      } else if (!/^\d{10}$/.test(phone)) {
+        errors.phone = 'Phone number must be 10 digits!';
+      }
+    }
+
+    if (role === 'barber') {
+      if (!schedule) errors.schedule = 'Schedule is required for Barbers!';
+    }
+
+    if (Object.values(errors).some((error) => error !== '')) {
       setFormErrors(errors);
       setErrorMessage('Please fill in all required fields!');
       return;
@@ -88,172 +123,52 @@ const Register = () => {
 
   // Handle registration submission
   const handleRegistration = () => {
-    console.log('Registering user with:', { ...userCredentials, role });
-    alert('Registration successful!');
+    registerAction({ ...userCredentials, role });
   };
 
   return (
-    <div className="font-poppins p-6">
-      <h2 className="font-bold text-4xl lg:text-5xl mb-6 text-center">Register Trimly</h2>
+    <div className='flex justify-center items-center min-h-screen'>
+      <div className='w-full sm:w-96 p-8  space-y-6'>
+        <h2 className="text-3xl font-primary text-center text-primary mb-4">Register Trimly</h2>
 
-      {step === 0 && (
-        <div className="role-selection mb-6">
-          <h3 className="text-xl mb-4">Please select your role:</h3>
-          <div className="role-buttons flex justify-center gap-4">
-            <button
-              className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
-              onClick={() => handleRoleSelection('barber')}
-            >
-              Barber
-            </button>
-            <button
-              className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
-              onClick={() => handleRoleSelection('customer')}
-            >
-              Customer
-            </button>
-          </div>
+        {/* Step navigation numbering */}
+        <StepNavigation step={step} />
+
+        {/* Role Selection */}
+        {step === 0 && <RoleSelection handleRoleSelection={handleRoleSelection} />}
+
+        {/* Step 1 (Username and Password) */}
+        {step === 1 && (
+          <Step1
+            userCredentials={userCredentials}
+            formErrors={formErrors}
+            errorMessage={errorMessage}
+            handleChange={handleChange}
+            handleStep1Submit={handleStep1Submit}
+            setStep={setStep}
+          />
+        )}
+
+        {/* Step 2 (Additional Info) */}
+        {step === 2 && (
+          <Step2
+            userCredentials={userCredentials}
+            formErrors={formErrors}
+            errorMessage={errorMessage}
+            handleChange={handleChange}
+            handleStep2Submit={handleStep2Submit}
+            setStep={setStep}
+            role={role}
+          />
+        )}
+
+        <div className="text-center mt-4">
+          <p>
+            Already have an account?{' '}
+            <Link to="/login" className="text-accent">Login here</Link>
+          </p>
         </div>
-      )}
-
-      {step === 1 && (
-        <form onSubmit={handleStep1Submit} className="space-y-6">
-          <div>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={userCredentials.username}
-              onChange={handleChange}
-              placeholder="Username"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
-            />
-            {formErrors.username && (
-              <p className="text-red-700 text-xs mt-1">{formErrors.username}</p>
-            )}
-          </div>
-
-          <div>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={userCredentials.password}
-              onChange={handleChange}
-              placeholder="Password"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
-            />
-            {formErrors.password && (
-              <p className="text-red-700 text-xs mt-1">{formErrors.password}</p>
-            )}
-          </div>
-
-          {errorMessage && <p className="text-red-700 text-xs text-center mt-2">{errorMessage}</p>}
-
-          <div className="flex justify-between">
-            <button
-              type="button"
-              className="py-2 px-4 bg-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-400 transition duration-300"
-              onClick={() => setStep(0)} // Go back to role selection
-            >
-              Back
-            </button>
-            <button
-              type="submit"
-              className="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
-            >
-              Next
-            </button>
-          </div>
-        </form>
-      )}
-
-      {step === 2 && (
-        <form onSubmit={handleStep2Submit} className="space-y-6">
-          <div>
-            <input
-              type="text"
-              id="firstname"
-              name="firstname"
-              value={userCredentials.firstname}
-              onChange={handleChange}
-              placeholder="First Name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
-            />
-            {formErrors.firstname && (
-              <p className="text-red-700 text-xs mt-1">{formErrors.firstname}</p>
-            )}
-          </div>
-
-          <div>
-            <input
-              type="text"
-              id="lastname"
-              name="lastname"
-              value={userCredentials.lastname}
-              onChange={handleChange}
-              placeholder="Last Name"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
-            />
-            {formErrors.lastname && (
-              <p className="text-red-700 text-xs mt-1">{formErrors.lastname}</p>
-            )}
-          </div>
-          {role === 'customer' && (
-            <div>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              value={userCredentials.phone}
-              onChange={handleChange}
-              placeholder="Phone Number"
-              className="w-full px-4 py-2 border border-gray-300 rounded-md"
-            />
-            {formErrors.phone && (
-              <p className="text-red-700 text-xs mt-1">{formErrors.phone}</p>
-            )}
-          </div>
-
-          )}
-          
-
-          {role === 'barber' && (
-            <div>
-              <input
-                type="text"
-                id="schedule"
-                name="schedule"
-                value={userCredentials.schedule}
-                onChange={handleChange}
-                placeholder="Schedule (e.g., Monday to Friday)"
-                className="w-full px-4 py-2 border border-gray-300 rounded-md"
-              />
-              {formErrors.schedule && (
-                <p className="text-red-700 text-xs mt-1">{formErrors.schedule}</p>
-              )}
-            </div>
-          )}
-
-          {errorMessage && <p className="text-red-700 text-xs text-center mt-2">{errorMessage}</p>}
-
-          <div className="flex justify-between">
-            <button
-              type="button"
-              className="py-2 px-4 bg-gray-300 text-gray-700 font-semibold rounded-md hover:bg-gray-400 transition duration-300"
-              onClick={() => setStep(1)} // Go back to the previous step
-            >
-              Back
-            </button>
-            <button
-              type="submit"
-              className="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition duration-300"
-            >
-              Register
-            </button>
-          </div>
-        </form>
-      )}
+      </div>
     </div>
   );
 };

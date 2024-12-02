@@ -2,3 +2,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom Styles */
+body {
+    @apply overflow-hidden;
+}
+
+#root {
+    @apply overflow-y-hidden
+}
