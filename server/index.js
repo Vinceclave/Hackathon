@@ -1,7 +1,8 @@
 const express = require('express');
+const bodyParser = require('body-parser')
 const { connectDB } = require('./config/db');
 const userRoutes = require('./routes/authRoutes');
-const serviceRoutes = require('./routes/servicesRoutes');
+const serviceRoutes = require('./routes/serviceRoutes');
 const cors = require('cors');
 
 const app = express();
@@ -17,7 +18,7 @@ connectDB();
 
 // Use user routes
 app.use('/', userRoutes); // No prefix
-app.use('/api/services', serviceRoutes); // Services API routes
+app.use('/api', serviceRoutes); // Services API routes
 
 const PORT = process.env.PORT || 3000;
 

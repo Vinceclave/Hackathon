@@ -13,6 +13,7 @@ import AddServices from "./components/dashboards/admin/AddServices";
 import ViewAppointments from "./components/dashboards/admin/ViewAppointments";
 import Register from "./components/auth/Register";
 import AddSpecialization from "./components/dashboards/barber/AddSpecialization";
+import ServicesList from "./components/dashboards/admin/ServicesList";
 
 const App = () => {
   return (
@@ -31,7 +32,7 @@ const App = () => {
                 <Route path="/admin" element={<AdminDashboard />}>
                   {/* These nested routes will now render inside AdminDashboard's Outlet */}
                   <Route path="manage-member" element={<ManageMember />} />
-                  <Route path="add-services" element={<AddServices />} />
+                  <Route path="add-services" element={<ServicesList />} />
                   <Route path="view-appointments" element={<ViewAppointments />} />
                   <Route index element={<div>Welcome to the Admin Dashboard</div>} />
                 </Route>
