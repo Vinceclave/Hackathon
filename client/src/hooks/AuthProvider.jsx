@@ -8,34 +8,44 @@ const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState("");
   const [role, setRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const { enqueueSnackbar } = useSnackbar();
 
+  // On initial page load, check localStorage for user token and role
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
-
-    if (userData && userData.token) {
+    
+    if (userData?.token) {
       setToken(userData.token);
       setRole(userData.role);
       setUser(userData.username);
-    }
-  }, []);
-
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("userData"));
-    const authPages = ["/login", "/register"];
-
-    if (userData && userData.token) {
-      if (authPages.includes(location.pathname)) {
-        navigate("/dashboard");
+      
+      // Redirect user based on role if not already on a role-specific page
+      if (!location.pathname.startsWith(`/${userData.role}`)) {
+        handleRedirection(userData.role);
       }
-    } else if (!userData || !userData.token) {
-      if (!authPages.includes(location.pathname) && location.pathname !== "/") {
+    }
+    
+    setIsLoading(false);
+  }, [navigate, location]);
+
+  const handleRedirection = (userRole) => {
+    switch (userRole) {
+      case "admin":
+        navigate("/admin");
+        break;
+      case "barber":
+        navigate("/barber");
+        break;
+      case "customer":
+        navigate("/customer");
+        break;
+      default:
         navigate("/login");
-      }
     }
-  }, [navigate, location.pathname]);
+  };
 
   const loginAction = async (data) => {
     try {
@@ -48,8 +58,7 @@ const AuthProvider = ({ children }) => {
       });
 
       const res = await response.json();
-      console.log(res);
-
+      
       if (res.token) {
         const userData = {
           token: res.token,
@@ -65,51 +74,17 @@ const AuthProvider = ({ children }) => {
 
         localStorage.setItem("userData", JSON.stringify(userData));
         enqueueSnackbar("Login successful!", { variant: "success" });
-        navigate("/dashboard");
+
+        // Redirect based on role upon successful login
+        handleRedirection(res.userType);
         return { success: true };
       }
 
       return { success: false, message: res.message || "Login failed. Please try again." };
     } catch (err) {
       console.error("Login failed:", err);
-      return { success: false, message: "An error occurred. Please try again later." };
-    }
-  };
-
-  const registerAction = async (data) => {
-    const { username, password: userpass, role: userType, firstname, lastname, phone: phonenum, schedule } = data;
-    console.log(data);
-
-    try {
-      const response = await fetch("http://localhost:5015/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          username,
-          userpass,
-          userType,
-          firstname,
-          lastname,
-          phonenum,
-          schedule,
-        }),
-      });
-
-      const res = await response.json();
-
-      if (response.ok) {
-        enqueueSnackbar("Registration successful!", { variant: "success" });
-        navigate("/login");
-        console.log("Registration successful", res.message);
-      } else {
-        enqueueSnackbar(`Registration failed: ${res.message}`, { variant: "error" });
-        console.error("Registration failed:", res.message);
-      }
-    } catch (e) {
-      enqueueSnackbar(`An error occurred: ${e.message}`, { variant: "error" });
-      console.error("An error occurred:", e);
+      enqueueSnackbar("An error occurred. Please try again later.", { variant: "error" });
+      return { success: false, message: "An error occurred." };
     }
   };
 
@@ -117,12 +92,20 @@ const AuthProvider = ({ children }) => {
     setUser(null);
     setToken("");
     setRole(null);
-    localStorage.removeItem("userData"); // Remove the user data from localStorage
-    navigate("/login"); // Redirect to login page
+    localStorage.removeItem("userData");
+    navigate("/login");
+    enqueueSnackbar("Logged out successfully!", { variant: "info" });
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, role, loginAction, registerAction, logOut }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      token, 
+      role, 
+      loginAction, 
+      logOut,
+      isLoading 
+    }}>
       {children}
     </AuthContext.Provider>
   );
