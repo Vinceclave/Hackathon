@@ -2,7 +2,7 @@ const Services = require('../model/servicesModel');
 
 // Insert Service
 const insertServices = async (req, res) => {
-  const { service_name, description, amount } = req.query; // Extract from request body
+  const { service_name, description, amount } = req.body; // Extract from request body
 
   if (!service_name || !description || !amount) {
     return res.status(400).json({
@@ -34,9 +34,10 @@ const insertServices = async (req, res) => {
 // Update Service
 const editServices = async (req, res) => {
   const { serviceID } = req.params;
-  const { name, description, amount } = req.query;
+  const { service_name, description, amount } = req.body;
+  console.log(service_name,description, amount)
 
-  if (!name || !description || !amount) {
+  if (!service_name || !description || !amount) {
     return res.status(400).json({
       message: 'Missing required fields: name, description, and amount are required',
     });
@@ -45,7 +46,7 @@ const editServices = async (req, res) => {
   const data = {
     type: 'UPDATE',
     serviceID: parseInt(serviceID.split(':').join('')),
-    name,
+    service_name,
     desc: description,
     amount: parseFloat(amount),
   };

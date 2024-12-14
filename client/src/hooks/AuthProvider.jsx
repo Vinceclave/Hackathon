@@ -88,6 +88,40 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  const registerAction = async (data) => {
+    const { username, password: userpass, role: userType, firstname, lastname, phone: phonenum, schedule } = data;
+    console.log(data);
+    try {
+      const response = await fetch("http://localhost:5015/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          userpass,
+          userType,
+          firstname,
+          lastname,
+          phonenum,
+          schedule,
+        }),
+      });
+      const res = await response.json();
+      if (response.ok) {
+        enqueueSnackbar("Registration successful!", { variant: "success" });
+        navigate("/login");
+        console.log("Registration successful", res.message);
+      } else {
+        enqueueSnackbar(`Registration failed: ${res.message}`, { variant: "error" });
+        console.error("Registration failed:", res.message);
+      }
+    } catch (e) {
+      enqueueSnackbar(`An error occurred: ${e.message}`, { variant: "error" });
+      console.error("An error occurred:", e);
+    }
+  };
+
   const logOut = () => {
     setUser(null);
     setToken("");
@@ -102,6 +136,7 @@ const AuthProvider = ({ children }) => {
       user, 
       token, 
       role, 
+      registerAction,
       loginAction, 
       logOut,
       isLoading 

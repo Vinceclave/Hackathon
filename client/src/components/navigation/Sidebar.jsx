@@ -54,7 +54,7 @@ const Sidebar = () => {
                   to="/barber/add-specialization"
                   className="block px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded-md transition"
                 >
-                  Add Specialization
+                  Profile
                 </Link>
               </li>
               <li>

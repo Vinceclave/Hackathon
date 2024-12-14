@@ -22,7 +22,7 @@ class Services {
 
   // Update a service
   static async editService(data) {
-    const { type, serviceID, name, desc, amount } = data;
+    const { type, serviceID, service_name, desc, amount } = data;
     console.log(serviceID)
 
     try {
@@ -30,7 +30,7 @@ class Services {
         EXEC [dbo].[sp_ManageServices]
           @OperationType = ${type},
           @ServiceID = ${serviceID},
-          @ServiceName = ${name},
+          @ServiceName = ${service_name},
           @Description = ${desc},
           @Amount = ${amount}
       `;

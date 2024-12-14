@@ -12,7 +12,7 @@ import ManageMember from "./components/dashboards/admin/ManageMember";
 import AddServices from "./components/dashboards/admin/AddServices";
 import ViewAppointments from "./components/dashboards/admin/ViewAppointments";
 import Register from "./components/auth/Register";
-import AddSpecialization from "./components/dashboards/barber/AddSpecialization";
+import Profile from "./components/dashboards/barber/Profile";
 import ServicesList from "./components/dashboards/admin/ServicesList";
 
 const App = () => {
@@ -41,7 +41,7 @@ const App = () => {
               {/* Barber Routes with Role Checking */}
               <Route element={<RoleBasedRoute allowedRoles={['barber']} />}>
                 <Route path="/barber" element={<BarberDashboard />}>
-                  <Route path="add-specialization" element={<AddSpecialization />} />
+                  <Route path="add-specialization" element={<Profile />} />
                   <Route path="view-appointments" element={<ViewAppointments />} />
                   <Route index element={<div>Welcome to the Barber Dashboard</div>} />
                 </Route>
