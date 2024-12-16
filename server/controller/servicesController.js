@@ -3,6 +3,7 @@ const Services = require('../model/servicesModel');
 // Insert Service
 const insertServices = async (req, res) => {
   const { service_name, description, amount } = req.body; // Extract from request body
+  console.log(service_name, description, amount)
 
   if (!service_name || !description || !amount) {
     return res.status(400).json({

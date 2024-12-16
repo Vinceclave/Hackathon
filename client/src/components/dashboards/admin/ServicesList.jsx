@@ -26,7 +26,6 @@ const ServicesList = () => {
   });
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // Fetch services from the backend
   const fetchServices = async () => {
     try {
       const response = await axios.get('http://localhost:5015/api/services');
@@ -44,7 +43,6 @@ const ServicesList = () => {
     fetchServices();
   }, []);
 
-  // Handle Delete
   const handleDelete = async (serviceID) => {
     try {
       await axios.delete(`http://localhost:5015/api/delete-service/${serviceID}`);
@@ -55,7 +53,6 @@ const ServicesList = () => {
     }
   };
 
-  // Handle Edit - Open edit form
   const handleEditClick = (service) => {
     setEditingService(service.SERVICE_ID);
     setEditForm({
@@ -65,7 +62,6 @@ const ServicesList = () => {
     });
   };
 
-  // Handle changes in the edit form fields
   const handleFormChange = (e) => {
     const { name, value } = e.target;
     setEditForm((prev) => ({
@@ -74,7 +70,6 @@ const ServicesList = () => {
     }));
   };
 
-  // Submit the edited data
   const handleEditSubmit = async (serviceID) => {
     try {
       await axios.put(
@@ -89,7 +84,6 @@ const ServicesList = () => {
     }
   };
 
-  // Handle Add Form Changes
   const handleAddFormChange = (e) => {
     const { name, value } = e.target;
     setAddForm((prev) => ({
@@ -98,7 +92,6 @@ const ServicesList = () => {
     }));
   };
 
-  // Handle Add New Service
   const handleAddSubmit = async () => {
     try {
       await axios.post('http://localhost:5015/api/add-service', addForm);
@@ -115,12 +108,12 @@ const ServicesList = () => {
   if (error) return <p className="text-center text-red-500 text-sm">{error}</p>;
 
   return (
-    <div className="p-6">
+    <div className="p-6 ">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Services </h1>
+        <h1 className="text-2xl font-primary text-primary">Services</h1>
         <button
           onClick={() => setIsAddModalOpen(true)}
-          className="flex items-center px-4 py-2 bg-green-500 text-white text-sm rounded-md hover:bg-green-600 transition duration-200"
+          className="flex items-center px-4 py-2 bg-accent text-white text-sm rounded-md hover:bg-accent/80 transition duration-200"
         >
           <PlusIcon className="mr-2 h-4 w-4" />
           Add New Service
@@ -129,9 +122,9 @@ const ServicesList = () => {
 
       {/* Service Table */}
       <div className="overflow-x-auto">
-        <table className="w-full bg-white border border-gray-200">
-          <thead>
-            <tr className="bg-gray-100 text-gray-600 text-sm">
+        <table className="w-full ">
+          <thead className="bg-primary text-white">
+            <tr>
               <th className="px-4 py-3 text-left">Service ID</th>
               <th className="px-4 py-3 text-left">Service Name</th>
               <th className="px-4 py-3 text-left">Description</th>
@@ -172,11 +165,11 @@ const ServicesList = () => {
       {editingService && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Edit Service</h3>
+            <h3 className="text-lg font-primary text-primary mb-4">Edit Service</h3>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="service_name" className="block text-sm font-medium text-gray-600 mb-1">Service Name</label>
+                <label htmlFor="service_name" className="block text-sm font-medium text-muted mb-1">Service Name</label>
                 <input
                   type="text"
                   name="service_name"
@@ -188,7 +181,7 @@ const ServicesList = () => {
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-600 mb-1">Description</label>
+                <label htmlFor="description" className="block text-sm font-medium text-muted mb-1">Description</label>
                 <textarea
                   name="description"
                   id="description"
@@ -200,7 +193,7 @@ const ServicesList = () => {
               </div>
 
               <div>
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-600 mb-1">Amount ($)</label>
+                <label htmlFor="amount" className="block text-sm font-medium text-muted mb-1">Amount ($)</label>
                 <input
                   type="number"
                   name="amount"
@@ -211,7 +204,7 @@ const ServicesList = () => {
                 />
               </div>
 
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end space-x-3 mt-4">
                 <button
                   onClick={() => setEditingService(null)}
                   className="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
@@ -236,11 +229,11 @@ const ServicesList = () => {
       {isAddModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Service</h3>
+            <h3 className="text-lg font-primary text-primary mb-4">Add New Service</h3>
 
             <div className="space-y-4">
               <div>
-                <label htmlFor="service_name" className="block text-sm font-medium text-gray-600 mb-1">Service Name</label>
+                <label htmlFor="service_name" className="block text-sm font-medium text-muted mb-1">Service Name</label>
                 <input
                   type="text"
                   name="service_name"
@@ -252,7 +245,7 @@ const ServicesList = () => {
               </div>
 
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-600 mb-1">Description</label>
+                <label htmlFor="description" className="block text-sm font-medium text-muted mb-1">Description</label>
                 <textarea
                   name="description"
                   id="description"
@@ -264,7 +257,7 @@ const ServicesList = () => {
               </div>
 
               <div>
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-600 mb-1">Amount ($)</label>
+                <label htmlFor="amount" className="block text-sm font-medium text-muted mb-1">Amount ($)</label>
                 <input
                   type="number"
                   name="amount"
@@ -275,7 +268,7 @@ const ServicesList = () => {
                 />
               </div>
 
-              <div className="flex justify-end space-x-3">
+              <div className="flex justify-end space-x-3 mt-4">
                 <button
                   onClick={() => setIsAddModalOpen(false)}
                   className="flex items-center px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"

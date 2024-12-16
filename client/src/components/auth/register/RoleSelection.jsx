@@ -7,11 +7,11 @@ const RoleSelection = ({ handleRoleSelection }) => {
       <h3 className="text-lg font-medium text-primary mb-6">Please select your role:</h3>
       
       <div className="flex justify-center space-x-4">
-        <Button 
+        {/* <Button 
           onClick={() => handleRoleSelection('barber')} 
         >
           Barber
-        </Button>
+        </Button> */}
         <Button 
           onClick={() => handleRoleSelection('customer')} 
         >
