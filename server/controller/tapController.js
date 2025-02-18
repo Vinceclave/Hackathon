@@ -1,21 +1,21 @@
-// controller/rewardController.js
-const Reward = require('../model/rewardModel');
+// controller/tapController.js
+const Tap = require('../model/tapModel');
 
-const createReward = async (req, res) => {
-    const { reward_name, reward_type, points_required, sponsored_by } = req.body;
+const createTap = async (req, res) => {
+    const { task_id, nominator_id, nominee_id } = req.body;
 
     try {
-        if (!reward_name || !reward_type || !points_required || !sponsored_by) {
+        if (!task_id || !nominator_id || !nominee_id) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
-        const reward = await Reward.createReward({ reward_name, reward_type, points_required, sponsored_by });
+        const tap = await Tap.createTap({ task_id, nominator_id, nominee_id });
 
-        return res.status(201).json({ message: 'Reward created successfully!', reward });
+        return res.status(201).json({ message: 'Tap created successfully!', tap });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ message: 'Server error', details: error.message });
     }
 };
 
-module.exports = { createReward };
+module.exports = { createTap };

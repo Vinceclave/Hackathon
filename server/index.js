@@ -6,11 +6,12 @@ const tapRoutes = require('./routes/tapRoutes');
 const rewardRoutes = require('./routes/rewardRoutes');
 const redemptionRoutes = require('./routes/redemptionRoutes');
 const businessRoutes = require('./routes/businessRoutes');
-
+const cors = require('cors')
 const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(cors());
 
 // Connect to the database
 connectDB();

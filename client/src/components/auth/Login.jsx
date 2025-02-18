@@ -1,18 +1,15 @@
+// Login.js
 import React, { useState } from 'react';
 import { FaEnvelope, FaLock } from 'react-icons/fa'; // Import icons from react-icons
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import axios from 'axios'; // Import axios to make HTTP requests
+import { Link, useNavigate } from 'react-router-dom'; // For navigation after successful login
 
 const Login = () => {
-  // State to handle form input values
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
-
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate(); // For navigation to dashboard or home page after successful login
 
-  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -21,24 +18,34 @@ const Login = () => {
     }));
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setIsLoading(true);
     setError(null);
 
-    // Simulate login logic (replace with actual logic)
-    setTimeout(() => {
-      setIsLoading(false);
-      // Simulate error response
-      setError('Login failed. Please check your credentials.');
-    }, 2000);
-  };
+    try {
+        // Send login request with email and password
+        const response = await axios.post('http://localhost:5015/api/users/login', {
+            email: formData.email,
+            user_pass: formData.password // Ensure you're sending this field correctly
+        });
+
+        // Assuming response contains the token and user details
+        localStorage.setItem('authToken', response.data.token);
+
+        // Redirect to dashboard or homepage
+        navigate('/dashboard');
+    } catch (err) {
+        setError(err.response ? err.response.data.message : 'Login failed, please try again.');
+    } finally {
+        setIsLoading(false);
+    }
+};
+
 
   return (
     <div className="min-h-screen flex justify-center items-center bg-gray-100">
-      {/* Form Container */}
       <div className="max-w-md w-full p-8 shadow-md rounded-md bg-white">
         <h2 className="text-3xl font-semibold mb-6 text-center text-gray-800">Login to Your Account</h2>
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa'; // Import icons from react-icons
-import InputField from '../common/InputField';
-import Button from '../common/Button';
-import { Link } from 'react-router-dom'; // Import Link for navigation
+import { Link, useNavigate } from 'react-router-dom'; // Import Link for navigation
+import axios from 'axios'; // Import Axios for HTTP requests
 
 const Register = () => {
-  // State to handle form input values
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    name: '',
+    full_name: '',
     email: '',
-    password: '',
+    phone_number: '',
+    user_pass: '',
+    user_level: 'user', // You can adjust the default user level if needed
   });
 
   const [error, setError] = useState(null);
@@ -25,18 +26,25 @@ const Register = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     setIsLoading(true);
     setError(null);
 
-    // Simulate registration logic (replace with actual logic)
-    setTimeout(() => {
+    try {
+      // Send registration request to backend API
+      const response = await axios.post('http://localhost:5000/api/users/register', formData);
+
+      // On success, show success message and redirect to login
+      alert('Registration successful. Please log in.');
+      navigate('/login');
+    } catch (err) {
+      // Handle error if request fails
+      setError(err.response ? err.response.data.message : 'Registration failed. Please try again.');
+    } finally {
       setIsLoading(false);
-      // Simulate error response
-      setError('Registration failed. Please try again.');
-    }, 2000);
+    }
   };
 
   return (
@@ -47,11 +55,11 @@ const Register = () => {
           <h2 className="text-3xl font-bold mb-6 text-center">Sign Up</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
-              <label className="block text-gray-700">Name</label>
+              <label className="block text-gray-700">Full Name</label>
               <input
                 type="text"
-                name="name"
-                value={formData.name}
+                name="full_name"
+                value={formData.full_name}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border rounded-md"
               />
@@ -67,15 +75,30 @@ const Register = () => {
               />
             </div>
             <div className="mb-4">
-              <label className="block text-gray-700">Password</label>
+              <label className="block text-gray-700">Phone Number</label>
               <input
-                type="password"
-                name="password"
-                value={formData.password}
+                type="text"
+                name="phone_number"
+                value={formData.phone_number}
                 onChange={handleChange}
                 className="w-full px-4 py-2 border rounded-md"
               />
             </div>
+            <div className="mb-4">
+              <label className="block text-gray-700">Password</label>
+              <input
+                type="password"
+                name="user_pass"
+                value={formData.user_pass}
+                onChange={handleChange}
+                className="w-full px-4 py-2 border rounded-md"
+              />
+            </div>
+            {error && (
+              <div className="mb-4 text-red-600 text-center">
+                <p>{error}</p>
+              </div>
+            )}
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
@@ -94,10 +117,9 @@ const Register = () => {
           </div>
         </div>
       </div>
-      
-      {/* Right Column (Additional Content or Image Section) */}
+
+      {/* Right Column (Optional Image Section) */}
       <div className="lg:w-1/2 flex justify-center items-center bg-gray-100 p-8">
-        {/* Replace this with your image */}
         <img src="src/assets/register-logo.png" alt="Register" className="w-full h-auto rounded-lg" />
       </div>
     </div>

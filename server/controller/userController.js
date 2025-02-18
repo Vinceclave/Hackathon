@@ -24,17 +24,20 @@ const register = async (req, res) => {
 
 // Login controller
 const login = async (req, res) => {
-    const { email, user_pass } = req.body;
+    const { email, user_pass } = req.body; // The credentials entered by the user
 
     try {
         // Find user by email
         const user = await User.login(email);
+
+        // If user is not found, return an error
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Compare password with hashed password
-        const isMatch = await bcrypt.compare(user_pass, user.USER_PASS);
+        // Ensure that the user_pass (input password) is compared with the hashed password (from the database)
+        const isMatch = await bcrypt.compare(user_pass, user.USER_PASS); // bcrypt requires the plain password (user_pass) and the hash (user.USER_PASS)
+
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
@@ -58,5 +61,6 @@ const login = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+
 
 module.exports = { register, login };
