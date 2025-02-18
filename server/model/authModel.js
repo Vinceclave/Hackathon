@@ -1,34 +1,54 @@
-// In the User model, ensure the column name matches 'user_pass'
 const { sql } = require('../config/db');
 const bcrypt = require('bcrypt');
 
 class User {
-    // Register method (for completeness)
+    // Method to register a new user
     static async register(userData) {
-        const { full_name, userpass, user_level, email, phone_number } = userData;
-        const hashedPassword = await bcrypt.hash(userpass, 10);
+        const { full_name, email, phone_number, user_pass, user_level } = userData;
+        const hashedPassword = await bcrypt.hash(user_pass, 10); // Hash the password
 
-        const result = await sql.query`
-            INSERT INTO USERS (FULL_NAME, EMAIL, PHONE_NUMBER, USER_PASS, USER_LEVEL, POINTS_EARNED, TOTAL_TAPS_COMPLETED)
-            VALUES (${full_name}, ${email}, ${phone_number}, ${hashedPassword}, ${user_level}, 0, 0);
+        const query = `
+            INSERT INTO USERS (FULL_NAME, EMAIL, PHONE_NUMBER, USER_PASS, USER_LEVEL)
+            VALUES (@FullName, @Email, @PhoneNumber, @UserPass, @UserLevel);
         `;
 
-        return {
-            full_name,
-            email,
-            phone_number,
-            user_level,
-            points_earned: 0,
-            total_taps_completed: 0
-        };
+        try {
+            const request = new sql.Request();
+            
+            // Add parameters to the query
+            request.input('FullName', sql.NVarChar, full_name);
+            request.input('Email', sql.NVarChar, email);
+            request.input('PhoneNumber', sql.NVarChar, phone_number);
+            request.input('UserPass', sql.NVarChar, hashedPassword); // Save the hashed password
+            request.input('UserLevel', sql.NVarChar, user_level);
+
+            await request.query(query);
+            return { message: 'User registered successfully' };
+        } catch (error) {
+            throw new Error('Error registering user: ' + error.message);
+        }
     }
 
-    // Login method
+    // Method to login a user
     static async login(email) {
-        const { recordset } = await sql.query`
-            SELECT * FROM USERS WHERE EMAIL = ${email};
+        const query = `
+            SELECT * FROM USERS WHERE EMAIL = @Email;
         `;
-        return recordset[0]; // Return the user record from the database
+
+        try {
+            const request = new sql.Request();
+            request.input('Email', sql.NVarChar, email);
+            const result = await request.query(query);
+
+            // If no user is found, return null
+            if (result.recordset.length === 0) {
+                return null;
+            }
+
+            return result.recordset[0]; // Return the user record
+        } catch (error) {
+            throw new Error('Error logging in user: ' + error.message);
+        }
     }
 }
 

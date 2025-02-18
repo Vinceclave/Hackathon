@@ -1,35 +1,34 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
 const { connectDB } = require('./config/db');
 const userRoutes = require('./routes/authRoutes');
+const taskRoutes = require('./routes/taskRoutes');
+const tapRoutes = require('./routes/tapRoutes');
+const rewardRoutes = require('./routes/rewardRoutes');
+const redemptionRoutes = require('./routes/redemptionRoutes');
+const businessRoutes = require('./routes/businessRoutes');
 
 const app = express();
 
 // Middleware to parse JSON bodies
 app.use(express.json());
 
-// CORS configuration (you can adjust the 'origin' based on your frontend setup)
-const corsOptions = {
-    origin: 'http://localhost:3000', // Adjust this to match your frontend URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-};
-
-app.use(cors(corsOptions));
-
-// Connect to database
+// Connect to the database
 connectDB();
 
-// Use user routes for authentication (register and login)
-app.use('/api', userRoutes); // Prefix with '/api' to better organize your routes
+// Use the user routes for authentication
+app.use('/api/users', userRoutes);
+app.use('/api', taskRoutes);
+app.use('/api', tapRoutes);
+app.use('/api', rewardRoutes);
+app.use('/api', redemptionRoutes);
+app.use('/api', businessRoutes);
 
 // Default error handler for any unhandled routes
 app.use((req, res) => {
-    res.status(404).json({ message: 'Not Found' });
+    res.status(404).json({ message: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 5000; // Change port if needed
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });

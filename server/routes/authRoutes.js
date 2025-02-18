@@ -1,4 +1,3 @@
-// userRoutes.js
 const express = require('express');
 const { register, login } = require('../controller/userController');
 const router = express.Router();
