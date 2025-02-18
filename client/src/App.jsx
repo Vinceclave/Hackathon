@@ -5,6 +5,7 @@ import AuthProvider from "./hooks/AuthProvider";
 import Login from "./components/auth/Login";
 import Landing from "./pages/Landing";
 import Register from "./components/auth/Register";
+import Dashboard from "./pages/Dashboard";
 
 
 const App = () => {
@@ -18,6 +19,8 @@ const App = () => {
               <Route path="/" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+
+              <Route path="/dashboard" element={<Dashboard />} />
 
             </Routes>
           </AuthProvider>
