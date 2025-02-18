@@ -1,40 +1,35 @@
+// In the User model, ensure the column name matches 'user_pass'
 const { sql } = require('../config/db');
 const bcrypt = require('bcrypt');
 
 class User {
-
-    // Method to register
+    // Register method (for completeness)
     static async register(userData) {
-        const {
-            username, userpass, userType, firstname, lastname, phonenum, schedule
-        } = userData;   
-
+        const { full_name, userpass, user_level, email, phone_number } = userData;
         const hashedPassword = await bcrypt.hash(userpass, 10);
 
-        const { recordset } = await sql.query`
-            EXEC dbo.RegisterUser 
-            @UserName = ${username}, 
-            @UserPass = ${hashedPassword},
-            @UserType = ${userType}, 
-            @FirstName = ${firstname}, 
-            @LastName = ${lastname}, 
-            @PhoneNum = ${phonenum || null},
-            @Schedule = ${schedule || null};
+        const result = await sql.query`
+            INSERT INTO USERS (FULL_NAME, EMAIL, PHONE_NUMBER, USER_PASS, USER_LEVEL, POINTS_EARNED, TOTAL_TAPS_COMPLETED)
+            VALUES (${full_name}, ${email}, ${phone_number}, ${hashedPassword}, ${user_level}, 0, 0);
         `;
 
-        return recordset[0]; 
+        return {
+            full_name,
+            email,
+            phone_number,
+            user_level,
+            points_earned: 0,
+            total_taps_completed: 0
+        };
     }
 
-    // Method to Login
-    static async login(username) {
+    // Login method
+    static async login(email) {
         const { recordset } = await sql.query`
-            EXEC dbo.login_user @USER_NAME = ${username};
-        `
-        return recordset[0]; // Return the user record from the stored procedure
+            SELECT * FROM USERS WHERE EMAIL = ${email};
+        `;
+        return recordset[0]; // Return the user record from the database
     }
-
-    // Additional methods can be added as necessary (e.g., for updating user info)
-
 }
 
 module.exports = User;
