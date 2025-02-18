@@ -1,59 +1,61 @@
-import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import landingImage from '../assets/landing-bg.png'
-import { useAuth } from "../hooks/AuthProvider"; // Import the useAuth hook
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { FaCheckSquare } from "react-icons/fa"; // Example of an icon from react-icons
+import bgLogo from '../assets/Human-Logo 1.png';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
 
-
-const Landing = () => {
-  const { token } = useAuth(); // Access the token from context
+const LandingPage = () => {
   const navigate = useNavigate(); // Hook to navigate programmatically
 
-  useEffect(() => {
-    // If the user already has a token, redirect to dashboard
-    if (token) {
-      navigate("/dashboard"); // Redirect to dashboard
-    }
-  }, [token, navigate]); // Depend on `token` and `navigate`
-
+  // Function to handle navigation
+  const handleButtonClick = () => {
+    navigate('/register'); // Navigate to the register page
+  };
 
   return (
-    <div className="relative overflow-hidden flex justify-start items-center min-h-screen px-6 py-8 2xl:px-20">
-      <div className="text-left max-w-md overflow-hidden">
-        <h1 className="text-5xl font-bold mb-6 text-primary">Trimly</h1>
-        <p className="text-lg text-gray-700 mb-8">
-          Your Personal Haircut Scheduling App. Manage your appointments with ease and convenience.
-        </p>
-
-        {/* Primary CTA - Login Button */}
-        <div className="mb-6">
-          <Link
-            to="/login"
-            className="bg-primary text-white py-3 px-8 rounded-md text-lg font-medium hover:bg-accent transition"
+    <div className="flex items-center justify-center min-h-screen bg-gray-50 p-6">
+      <div className="self-center flex flex-col lg:flex-row items-center justify-between w-full max-w-[1200px] mx-auto space-y-12 lg:space-y-0">
+        {/* Left Section */}
+        <div className="text-left max-w-xl w-full space-y-6">
+          <h1 className="text-6xl font-extrabold text-gray-800 mb-4">
+            Communi<span className="uppercase">Tap</span>
+          </h1>
+          <p className="text-2xl text-gray-600 mb-6">
+            Helping the neighborhood with fun tasks
+          </p>
+          <button 
+            onClick={handleButtonClick} // Handle button click
+            className="px-8 py-3 bg-blue-600 text-white text-xl font-semibold rounded-full hover:bg-blue-700 transition-all duration-300 ease-in-out shadow-lg transform hover:scale-105"
           >
-            Log in to your account
-          </Link>
+            Take a task now!
+          </button>
+
+          <div className="space-y-4 mt-8">
+            <div className="flex items-center text-2xl text-gray-700">
+              <FaCheckSquare className="mr-3 text-green-500 text-xl" />
+              <span>Help to level up your skills</span>
+            </div>
+            <div className="flex items-center text-2xl text-gray-700">
+              <FaCheckSquare className="mr-3 text-green-500 text-xl" />
+              <span>Tap and pass the completed task</span>
+            </div>
+            <div className="flex items-center text-2xl text-gray-700">
+              <FaCheckSquare className="mr-3 text-green-500 text-xl" />
+              <span>Earn rewards for your efforts!</span>
+            </div>
+          </div>
         </div>
 
-        {/* Secondary CTA - Register for new users */}
-        <div>
-          <p className="text-sm text-gray-600">Don't have an account?</p>
-          <Link
-            to="/register"
-            className="text-primary text-lg font-medium hover:underline"
-          >
-            Sign up for free
-          </Link>
-        </div>
-        <div>
+        {/* Right Section with Image */}
+        <div className="self-stretch flex-1 relative">
+          <img 
+            className="h-[200%] -mb-72" 
+            src={bgLogo} 
+            alt="background logo" 
+          />
         </div>
       </div>
-      <div className="absolute translate-y-64 translate-x-48 sm:translate-y-96 xl:translate-x-96 sm:translate-x-72 rotate-45 transform transition-all duration-300 hover:scale-105 bg-transparent">
-        <img src={landingImage} alt="Landing" className="lg:w-[80vw] rounded-lg" />
-      </div>
-
     </div>
   );
 };
 
-export default Landing;
+export default LandingPage;

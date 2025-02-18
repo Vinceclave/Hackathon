@@ -1,163 +1,98 @@
 import React, { useState } from 'react';
-import { useAuth } from "../../hooks/AuthProvider"; // Import the useAuth hook
-import { Link } from 'react-router-dom'; // Import Link from react-router-dom
-import StepNavigation from '../auth/register/StepNavigation';
-import RoleSelection from '../auth/register/RoleSelection';
-import Step1 from '../auth/register/steps/StepOne';
-import Step2 from '../auth/register/steps/StepTwo';
+import { FaUser, FaEnvelope, FaLock } from 'react-icons/fa'; // Import icons from react-icons
+import InputField from '../common/InputField';
+import Button from '../common/Button';
+import { Link } from 'react-router-dom'; // Import Link for navigation
 
 const Register = () => {
-  const [step, setStep] = useState(0); // Track the current step of the form
-  const [role, setRole] = useState(''); // Store the role (Barber or Customer)
-  const [userCredentials, setUserCredentials] = useState({
-    username: '',
+  // State to handle form input values
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
     password: '',
-    firstname: '',
-    lastname: '',
-    phone: '', // Specific to Customers
-    schedule: '', // Specific to Barbers
   });
 
-  const [errorMessage, setErrorMessage] = useState('');
-  const [formErrors, setFormErrors] = useState({
-    username: '',
-    password: '',
-    firstname: '',
-    lastname: '',
-    phone: '',
-    schedule: '',
-  });
+  const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const { registerAction } = useAuth(); // Access loginAction from context
-
-  // Handle input changes
+  // Handle form field changes
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserCredentials((prevState) => ({
+    setFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
   };
 
-  // Handle role selection
-  const handleRoleSelection = (selectedRole) => {
-    setRole(selectedRole);
-    setUserCredentials({
-      username: '',
-      password: '',
-      firstname: '',
-      lastname: '',
-      phone: '',
-      schedule: '',
-    }); // Clear the form fields for the selected role
-    setStep(1); // Move to the next step after selecting a role
-  };
-
-  // Handle step 1 (username and password)
-  const handleStep1Submit = (e) => {
+  // Handle form submission
+  const handleSubmit = (e) => {
     e.preventDefault();
-    const { username, password } = userCredentials;
 
-    // Validate the username and password
-    let errors = { username: '', password: '' };
-    if (!username) {
-      errors.username = 'Username is required!';
-    }
-    if (!password) {
-      errors.password = 'Password is required!';
-    }
+    setIsLoading(true);
+    setError(null);
 
-    // If there are validation errors, set them and return early
-    if (errors.username || errors.password) {
-      setFormErrors(errors);
-      setErrorMessage('Please fill in all fields.');
-      return;
-    }
-
-    setErrorMessage('');
-    setFormErrors({ username: '', password: '' }); // Clear previous errors
-    setStep(2); // Move to step 2
-  };
-
-  // Handle step 2 (additional info based on role)
-  const handleStep2Submit = (e) => {
-    e.preventDefault();
-    const { firstname, lastname, phone, schedule } = userCredentials;
-
-    // Validate the step 2 fields based on the selected role
-    let errors = { firstname: '', lastname: '', phone: '', schedule: '' };
-
-    if (!firstname || !lastname) {
-      if (!firstname) errors.firstname = 'First Name is required!';
-      if (!lastname) errors.lastname = 'Last Name is required!';
-    }
-
-    if (role === 'customer') {
-      if (!phone) errors.phone = 'Phone number is required for Customers!';
-    }
-
-    if (role === 'barber') {
-      if (!schedule) errors.schedule = 'Schedule is required for Barbers!';
-    }
-
-    if (Object.values(errors).some((error) => error !== '')) {
-      setFormErrors(errors);
-      setErrorMessage('Please fill in all required fields!');
-      return;
-    }
-
-    setErrorMessage('');
-    setFormErrors({ firstname: '', lastname: '', phone: '', schedule: '' });
-    handleRegistration(); // Proceed to registration completion
-  };
-
-  // Handle registration submission
-  const handleRegistration = () => {
-    registerAction({...userCredentials, role})
+    // Simulate registration logic (replace with actual logic)
+    setTimeout(() => {
+      setIsLoading(false);
+      // Simulate error response
+      setError('Registration failed. Please try again.');
+    }, 2000);
   };
 
   return (
-    <div className='flex justify-center items-center min-h-screen'>
-      <div className='w-full sm:w-96 p-8  space-y-6'>
-        <h2 className="text-3xl font-primary text-center text-primary mb-4">Register Trimly</h2>
+    <div className="max-w-sm mx-auto p-6 bg-white shadow-md rounded-md">
+      <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
 
-        {/* Step navigation numbering */}
-        <StepNavigation step={step} />
+      <form onSubmit={handleSubmit}>
+        {/* Name Input */}
+        <InputField
+          id="name"
+          name="name"
+          label="Name"
+          placeholder="Enter your name"
+          value={formData.name}
+          onChange={handleChange}
+          error={error}
+        />
 
-        {/* Role Selection */}
-        {step === 0 && <RoleSelection handleRoleSelection={handleRoleSelection} />}
+        {/* Email Input */}
+        <InputField
+          id="email"
+          name="email"
+          type="email"
+          label="Email"
+          placeholder="Enter your email"
+          value={formData.email}
+          onChange={handleChange}
+          error={error}
+        />
 
-        {/* Step 1 (Username and Password) */}
-        {step === 1 && (
-          <Step1
-            userCredentials={userCredentials}
-            formErrors={formErrors}
-            errorMessage={errorMessage}
-            handleChange={handleChange}
-            handleStep1Submit={handleStep1Submit}
-            setStep={setStep}
-          />
-        )}
+        {/* Password Input */}
+        <InputField
+          id="password"
+          name="password"
+          type="password"
+          label="Password"
+          placeholder="Enter your password"
+          value={formData.password}
+          onChange={handleChange}
+          error={error}
+        />
 
-        {/* Step 2 (Additional Info) */}
-        {step === 2 && (
-          <Step2
-            userCredentials={userCredentials}
-            formErrors={formErrors}
-            errorMessage={errorMessage}
-            handleChange={handleChange}
-            handleStep2Submit={handleStep2Submit}
-            setStep={setStep}
-            role={role}
-          />
-        )}
+        {/* Submit Button with an Icon */}
+        <Button isLoading={isLoading} disabled={isLoading} icon={<FaUser />}>
+          Register
+        </Button>
+      </form>
 
-        <div className="text-center mt-4">
-          <p>
-            Already have an account?{' '}
-            <Link to="/login" className="text-accent">Login here</Link>
-          </p>
-        </div>
+      {/* Link to Login Page */}
+      <div className="mt-4 text-center">
+        <p>
+          Already have an account?{' '}
+          <Link to="/login" className="text-blue-600 hover:underline">
+            Log in here
+          </Link>
+        </p>
       </div>
     </div>
   );
